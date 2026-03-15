@@ -18,7 +18,7 @@ function App() {
   const [showDashboard, setShowDashboard] = useState(false);
   
   // Connect to the Python FastAPI WebSocket endpoint
-  const wsUrl = 'ws://localhost:8000/ws/attacks';
+  const wsUrl = import.meta.env.VITE_WS_URL;
   const { isConnected, attacks, latestAttack, stats } = useWebSocket(wsUrl);
 
   return (
