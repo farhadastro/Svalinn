@@ -6,9 +6,11 @@ export function CountrySelector() {
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
 
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   useEffect(() => {
     // Fetch available countries from backend
-    fetch('http://localhost:8000/api/countries')
+    fetch(`${apiUrl}/api/countries`)
       .then((res) => res.json())
       .then((data) => {
         if (data.countries) {
@@ -17,13 +19,13 @@ export function CountrySelector() {
         }
       })
       .catch((err) => console.error('Failed to load countries:', err));
-  }, []);
+  }, [apiUrl]);
 
   const handleSimulate = async () => {
     setLoading(true);
     setStatusMsg('');
     try {
-      const res = await fetch('http://localhost:8000/api/simulate_country', {
+      const res = await fetch(`${apiUrl}/api/simulate_country`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ country: selected, duration_seconds: 60 }),
