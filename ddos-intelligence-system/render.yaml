@@ -1,7 +1,7 @@
 services:
   # US Instance (Primary for Americas & Asia)
   - type: web
-    name: ddos-backend-us
+    name: hyperddos-backend-us
     env: docker
     region: oregon 
     rootDir: backend
@@ -13,7 +13,7 @@ services:
 
   # EU Instance (Primary for Europe & Africa)
   - type: web
-    name: ddos-backend-eu
+    name: hyperddos-backend-eu
     env: docker
     region: frankfurt
     rootDir: backend
