@@ -7,7 +7,6 @@ All data is purely simulated — no real network traffic involved.
 import uuid
 import time
 import random
-import math
 from typing import Optional
 
 from .geo_data import (

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
+// Base URL for API calls — uses VITE_API_URL in production, empty string for dev (Vite proxy)
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export function CountrySelector() {
   const [countries, setCountries] = useState([]);
   const [selected, setSelected] = useState('');
@@ -8,35 +11,41 @@ export function CountrySelector() {
 
   useEffect(() => {
     // Fetch available countries from backend
-    fetch('http://localhost:8000/api/countries')
+    fetch(`${API_BASE}/api/countries`)
       .then((res) => res.json())
       .then((data) => {
         if (data.countries) {
           setCountries(data.countries.sort((a, b) => a.name.localeCompare(b.name)));
-          setSelected(data.countries[0].name);
+          setSelected(data.countries[0]?.name || '');
         }
       })
-      .catch((err) => console.error('Failed to load countries:', err));
+      .catch(() => { /* Backend may not be running yet */ });
   }, []);
 
   const handleSimulate = async () => {
     setLoading(true);
     setStatusMsg('');
     try {
-      const res = await fetch('http://localhost:8000/api/simulate_country', {
+      const res = await fetch(`${API_BASE}/api/simulate_country`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ country: selected, duration_seconds: 60 }),
       });
-      const data = await res.json();
-      if (res.ok) {
+      
+      if (!res.ok) {
+        setStatusMsg(`Simulation failed (${res.status}).`);
+        return;
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
         setStatusMsg(`Simulating attack from ${data.country}...`);
         setTimeout(() => setStatusMsg(''), 5000);
       } else {
-        setStatusMsg('Simulation failed.');
+        setStatusMsg('Invalid API response.');
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       setStatusMsg('API Error.');
     } finally {
       setLoading(false);

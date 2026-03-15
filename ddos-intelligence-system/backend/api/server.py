@@ -11,7 +11,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.middleware.gzip import GZipMiddleware
+from pydantic import BaseModel, Field
 
 from simulation.attack_simulator import generate_attack_event, generate_batch
 from simulation.geo_data import get_all_country_names, COUNTRIES
@@ -88,17 +89,18 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 # ─── Pydantic models ────────────────────────────────────────────────────────
 
 class SimulateCountryRequest(BaseModel):
     country: str
-    duration_seconds: int = 60
+    duration_seconds: int = Field(default=60, ge=10, le=300)
 
 
 class StatusResponse(BaseModel):
@@ -144,7 +146,7 @@ async def simulate_country(req: SimulateCountryRequest):
     if req.country not in available:
         return {"error": f"Unknown country. Available: {available}"}
 
-    duration = max(10, min(req.duration_seconds, 300))
+    duration = req.duration_seconds
     forced_source_country = req.country
     forced_source_expiry = time.time() + duration
 
@@ -168,8 +170,14 @@ async def websocket_attacks(ws: WebSocket):
 
         # Keep connection alive — read pings from client
         while True:
-            await ws.receive_text()
-    except WebSocketDisconnect:
+            try:
+                # Add timeout and size limits to prevent slowloris & resource exhaustion
+                data = await asyncio.wait_for(ws.receive_text(), timeout=60.0)
+                if len(data) > 256:
+                    break # Payload too large, close connection (defense mechanism)
+            except asyncio.TimeoutError:
+                break # Client stopped pinging, close connection
+    except Exception:
         pass
     finally:
         if ws in connected_clients:

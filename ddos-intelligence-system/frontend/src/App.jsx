@@ -72,7 +72,7 @@ function App() {
       </div>
 
       {/* Left-side Stats Overlay */}
-      <div className={`stats-overlay ${showDashboard ? 'stats-overlay--visible' : ''}`}>
+      <div className="stats-overlay stats-overlay--visible">
         <div className="stat-chip">
           <div style={{ marginRight: '16px' }}>⚡</div>
           <div>

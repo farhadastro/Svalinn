@@ -1,0 +1,29 @@
+name: Keep Render Backends Alive
+on:
+  schedule:
+    # Optional: You can uncomment this if you prefer to consume your 750 hours 
+    # to keep one or both servers awake, but be careful of exhausting the quota!
+    # - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping US Backend
+        run: |
+          if [ -n "${{ secrets.RENDER_BACKEND_US }}" ]; then
+            curl -s "${{ secrets.RENDER_BACKEND_US }}/api/status" > /dev/null
+            echo "Pinged US Backend"
+          else
+            echo "US Backend URL not set, skipping"
+          fi
+      
+      - name: Ping EU Backend
+        run: |
+          if [ -n "${{ secrets.RENDER_BACKEND_EU }}" ]; then
+            curl -s "${{ secrets.RENDER_BACKEND_EU }}/api/status" > /dev/null
+            echo "Pinged EU Backend"
+          else
+            echo "EU Backend URL not set, skipping"
+          fi

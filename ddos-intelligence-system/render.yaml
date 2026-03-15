@@ -1,8 +1,25 @@
 services:
+  # US Instance (Primary for Americas & Asia)
   - type: web
-    name: ddos-backend
-    runtime: python
-    rootDir: ddos-intelligence-system/backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn api.server:app --host 0.0.0.0 --port 10000
+    name: ddos-backend-us
+    env: docker
+    region: oregon 
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
     plan: free
+    envVars:
+      - key: REGION
+        value: US_WEST
+
+  # EU Instance (Primary for Europe & Africa)
+  - type: web
+    name: ddos-backend-eu
+    env: docker
+    region: frankfurt
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: REGION
+        value: EU_CENTRAL
+
