@@ -1,4 +1,17 @@
 services:
+  # Frontend Static Site
+  - type: web
+    name: hyperddos-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
   # US Instance (Primary for Americas & Asia)
   - type: web
     name: hyperddos-backend-us
@@ -22,4 +35,3 @@ services:
     envVars:
       - key: REGION
         value: EU_CENTRAL
-

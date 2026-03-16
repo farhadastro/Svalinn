@@ -1,38 +1,26 @@
-# CI/CD Secrets Setup Guide
+# CI/CD Setup Guide (All-in-One Render Blueprint)
 
-To enable the fast, concurrent deployments to Vercel and Render via GitHub Actions, you must configure the following **Repository Secrets** in GitHub.
+Since Vercel routing was skipped, we have pivoted to a **100% Render deployment architecture**. Your repository now contains a complete `render.yaml` Blueprint which defines your frontend and both of your backend servers simultaneously.
 
-## Navigate to Secrets in GitHub
-1. Go to your GitHub repository -> **Settings** -> **Secrets and variables** -> **Actions**.
-2. Click **New repository secret** for each of the following:
+## Step 1: Deploying the Entire Stack via Render
+Because the Blueprint is fully configured, deploying the entire `hyperddos-attack-map` is essentially a one-click process!
 
-### Vercel Secrets
-These are required for the `npx vercel deploy` command used in the workflow.
+1. Go to your [Render Dashboard](https://dashboard.render.com/).
+2. Click the **New +** button in the top right corner.
+3. Select **Blueprint**.
+4. Connect your GitHub account and select this repository (`Svalinn`).
+5. Render will automatically read `render.yaml` and provision all 3 services at once:
+   - `hyperddos-frontend` (Fast static site hosting for your React app)
+   - `hyperddos-backend-us` (Oregon Docker instance)
+   - `hyperddos-backend-eu` (Frankfurt Docker instance)
+6. Click **Apply**.
 
-1. **`VERCEL_TOKEN`**:
-   - Go to your Vercel Account Settings -> **Tokens** (https://vercel.com/account/tokens).
-   - Create a new token and paste it as the value for `VERCEL_TOKEN`.
+## Step 2: Continuous Integration (GitHub Actions)
+The included GitHub Action (`.github/workflows/deploy.yml`) will continue to run tests (like Python syntax validation) on every commit.
 
-2. **`VERCEL_ORG_ID`**:
-   - Get this from your Vercel Project Settings, but usually, Vercel gives you a `.vercel/project.json` file when you run `npx vercel link` locally.
-   - If you run `npx vercel link` locally (and authenticate via browser), a `.vercel` folder is created. Open `.vercel/project.json`. The `orgId` value goes here.
+If you choose to disable "Auto-Deploy" in Render and prefer manual deployment triggers, you can set the following secrets in GitHub (**Settings > Secrets and variables > Actions**):
+- `RENDER_DEPLOY_HOOK_US`
+- `RENDER_DEPLOY_HOOK_EU`
+- `RENDER_DEPLOY_HOOK_FRONTEND`
 
-3. **`VERCEL_PROJECT_ID`**:
-   - From that same `.vercel/project.json` file, copy the `projectId` and paste it here.
-
-### Render Secrets
-These trigger the auto-deployments for your backend Web Services securely without exposing your main Render API key.
-
-1. **`RENDER_DEPLOY_HOOK_US`**:
-   - Go to your Render Dashboard -> Select your `ddos-backend-us` service -> **Settings**.
-   - Scroll down to **Deploy Hook**.
-   - Copy the unique deploy hook URL and paste it as the value for this secret.
-
-2. **`RENDER_DEPLOY_HOOK_EU`**:
-   - Go to your Render Dashboard -> Select your `ddos-backend-eu` service -> **Settings**.
-   - Scroll down to **Deploy Hook**.
-   - Copy the unique deploy hook URL and paste it as the value for this secret.
-
----
-
-Once these 5 secrets are set in GitHub, any push to the `main` branch will automatically and concurrently deploy the frontend to Vercel and trigger the backend Docker build/deployment on Render!
+However, the Render Blueprint defaults to automatically redeploying everything whenever it detects a push to your `main` branch, meaning **you do not strictly need any GitHub Secrets** if you use the Blueprint method!

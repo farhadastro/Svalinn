@@ -1,4 +1,4 @@
-name: Deploy to Vercel and Render
+name: Deploy to Render
 
 on:
   push:
@@ -6,33 +6,21 @@ on:
       - main
 
 jobs:
-  deploy-frontend:
-    name: Deploy Frontend to Vercel
+  deploy-backend:
+    name: Trigger Render Deployments
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: 20
+          python-version: '3.11'
           
-      - name: Install dependencies
-        working-directory: ./frontend
-        run: npm ci
-        
-      - name: Build and Deploy to Vercel
-        working-directory: ./frontend
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      - name: Basic Syntax Validation
+        working-directory: ./backend
         run: |
-          npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-          npx vercel build --prod --token=$VERCEL_TOKEN
-          npx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
-
-  deploy-backend:
+          python -m py_compile $(find . -name "*.py")
     name: Trigger Render Deployments
     runs-on: ubuntu-latest
     steps:
